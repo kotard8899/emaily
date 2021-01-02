@@ -21,16 +21,15 @@ passport.use(new GoogleStrategy ({
   callbackURL: '/auth/google/callback',
   proxy: true
   }, 
-  (accessToken, refreshToken, profile, done) => {
-    User.findOne({ googleID: profile.id})
-      .then((existingUser) => {
-        if (existingUser) {
-          done(null, existingUser); // 第一個參數是當錯誤時要做的事，這裡因為不會出錯所以傳null
-        } else {
-          new User({ googleID: profile.id })
-            .save()
-            .then(user => done(null, user))
-        }
-      })
+  async (accessToken, refreshToken, profile, done) => {
+    const existingUser = await User.findOne({ googleID: profile.id});
+    if (existingUser) {
+      return done(null, existingUser); // 第一個參數是當錯誤時要做的事，這裡因為不會出錯所以傳null
+    }
+
+    const user = await new User({ googleID: profile.id }).save();
+    done(null, user);
   })
 ); 
+
+
